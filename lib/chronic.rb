@@ -73,11 +73,25 @@ module Chronic
     #     # => Thu, 15 Jun 2006 05:45:00 UTC +00:00
     #
     # Returns The Time class Chronic uses internally.
-    attr_accessor :time_class
+    def time_class
+      Thread.current[:chronic_time_class] || ::Time
+    end
+
+    def time_class=(klass)
+      Thread.current[:chronic_time_class] = klass
+    end
+
+    def with_time_class(new_klass)
+      begin
+        old_klass, ::Chronic.time_class = ::Chronic.time_class, new_klass
+          yield
+      ensure
+        ::Chronic.time_class = old_klass
+      end
+    end
   end
 
   self.debug = false
-  self.time_class = ::Time
 
 
   # Parses a string containing a natural language date or time.
